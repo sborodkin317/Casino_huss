@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HUSS CASINO</title>
+    <title>HUSS CASINO | Premium</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --neon-red: #ff003c;
-            --neon-red-glow: #ff4d6d;
-            --dark-bg: #050505;
-            --card-bg: #14080a;
-            --cell-bg: #2a0a10;
+            --neon-red-glow: rgba(255,0,60,0.6);
             --neon-green: #00ff66;
+            --neon-gold: #ffcc00;
+            --dark-bg: #050505;
+            --card-bg: rgba(20, 8, 10, 0.85);
+            --cell-bg: #2a0a10;
+            --header-height: 70px;
+            --footer-height: 70px;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
@@ -27,329 +30,403 @@
             padding: 0;
             overflow-x: hidden;
             min-height: 100vh;
+            background: radial-gradient(circle at 50% 0%, #2a050a 0%, #050505 60%, #000 100%);
+            background-attachment: fixed;
         }
 
-        /* ====== ФОН: ДЫМ ====== */
+        /* ====== ДЫМ НА ФОНЕ ====== */
         .smoke-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; pointer-events: none; }
-        .smoke { position: absolute; bottom: -150px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(200,200,200,0.15) 0%, rgba(200,200,200,0) 60%); border-radius: 50%; filter: blur(20px); animation: floatUp 12s infinite linear; transition: transform 0.1s ease-out; }
-        .smoke.red { background: radial-gradient(circle, rgba(255,0,60,0.2) 0%, rgba(255,0,60,0) 60%); filter: blur(25px); }
+        .smoke { position: absolute; bottom: -150px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(200,200,200,0.1) 0%, rgba(200,200,200,0) 60%); border-radius: 50%; filter: blur(20px); animation: floatUp 15s infinite linear; }
+        .smoke.red { background: radial-gradient(circle, rgba(255,0,60,0.15) 0%, rgba(255,0,60,0) 60%); filter: blur(25px); }
         .smoke:nth-child(1) { left: 5%; animation-duration: 14s; animation-delay: 0s; }
         .smoke:nth-child(2) { left: 25%; animation-duration: 18s; animation-delay: 2s; }
         .smoke:nth-child(3) { left: 50%; animation-duration: 15s; animation-delay: 4s; }
         .smoke:nth-child(4) { left: 75%; animation-duration: 20s; animation-delay: 1s; }
         .smoke:nth-child(5) { left: 90%; animation-duration: 13s; animation-delay: 5s; }
-        .smoke:nth-child(6) { left: 15%; animation-duration: 16s; animation-delay: 3s; }
-        .smoke:nth-child(7) { left: 65%; animation-duration: 19s; animation-delay: 0s; }
         @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 0.8; } 100% { transform: translateY(-120vh) scale(1.5); opacity: 0; } }
 
-        /* --- ЭКРАН ПРИВЕТСТВИЯ --- */
-        #welcome-screen {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            z-index: 10;
-        }
-        
-        .logo { font-size: 42px; font-weight: 900; margin: 0; line-height: 1; letter-spacing: 2px; text-align: center;}
-        .text-huss { color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red), 0 0 30px var(--neon-red-glow); }
-        .text-casino { color: #fff; font-weight: 700; font-size: 28px; display: block; margin-top: 5px;}
+        /* ====== ОБЩАЯ СТРУКТУРА ====== */
+        .app-container { display: none; flex-direction: column; height: 100vh; position: relative; z-index: 10; }
+        .content-area { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 90px; }
 
-        .enter-btn {
-            margin-top: 50px;
-            background: transparent;
-            color: var(--neon-red);
-            border: 2px solid var(--neon-red);
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: 700;
-            border-radius: 8px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 0 15px rgba(255,0,60,0.4), inset 0 0 10px rgba(255,0,60,0.2);
-            transition: 0.3s;
+        /* ====== ШАПКА ====== */
+        .app-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; height: var(--header-height);
+            background: rgba(10, 5, 5, 0.9); backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,0,60,0.3);
+            position: sticky; top: 0; z-index: 50;
         }
-        .enter-btn:active { background: var(--neon-red); color: #fff; box-shadow: 0 0 30px var(--neon-red); }
-
-        /* --- ГЛАВНЫЙ ЭКРАН --- */
-        #main-app { display: none; padding: 20px; padding-bottom: 80px; position: relative; z-index: 10; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 10px; }
-        .user-info { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 40px; height: 40px; background: var(--neon-red); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #fff; font-weight: 900; box-shadow: 0 0 10px var(--neon-red); }
-        .username { font-size: 14px; font-weight: 700; }
-
-        .balance-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 0, 60, 0.4);
-            border-radius: 16px;
-            padding: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 0 20px rgba(255, 0, 60, 0.15);
+        .logo-mini { font-size: 20px; font-weight: 900; color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red-glow); }
+        .balance-badge {
+            background: var(--card-bg); border: 1px solid var(--neon-red);
+            padding: 8px 15px; border-radius: 20px; font-weight: 900;
+            display: flex; align-items: center; gap: 5px; box-shadow: 0 0 15px var(--neon-red-glow);
         }
-        .balance-title { font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-        .balance-amount { font-size: 32px; font-weight: 900; color: var(--neon-red); text-shadow: 0 0 15px rgba(255, 0, 60, 0.8); }
-        
-        /* --- ОБЩИЕ КНОПКИ --- */
+
+        /* ====== НИЖНЕЕ МЕНЮ ====== */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--footer-height);
+            background: rgba(10, 5, 5, 0.95); backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,0,60,0.3);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 100;
+        }
+        .nav-item {
+            color: #888; font-size: 12px; font-weight: 700; display: flex; flex-direction: column;
+            align-items: center; gap: 5px; cursor: pointer; transition: 0.2s;
+        }
+        .nav-item.active { color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red-glow); }
+        .nav-icon { font-size: 24px; }
+
+        /* ====== ЭКРАНЫ ====== */
+        .screen { display: none; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ====== ГЛАВНОЕ МЕНЮ (СЕТКА ИГР) ====== */
+        .games-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .game-card {
-            background: var(--card-bg); border: 1px solid rgba(255, 0, 60, 0.3); border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 0 15px rgba(255,0,60,0.1);
+            background: var(--card-bg); border: 1px solid rgba(255,0,60,0.3);
+            border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer;
+            transition: 0.2s; box-shadow: 0 0 15px rgba(255,0,60,0.1); position: relative; overflow: hidden;
         }
-        .game-card:active { transform: scale(0.95); box-shadow: 0 0 25px rgba(255,0,60,0.4); }
+        .game-card:active { transform: scale(0.95); border-color: var(--neon-red); }
+        .game-icon { font-size: 40px; margin-bottom: 10px; filter: drop-shadow(0 0 10px var(--neon-red-glow)); }
+        .game-name { font-size: 14px; font-weight: 700; color: #fff; }
 
-        .back-btn { background: none; border: none; color: var(--neon-red); font-size: 14px; cursor: pointer; padding: 0; font-weight: 700; text-shadow: 0 0 5px var(--neon-red); }
-        .game-title-big { font-size: 20px; font-weight: 900; color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red); }
+        /* ====== ОБЩИЕ ЭЛЕМЕНТЫ УПРАВЛЕНИЯ ====== */
+        .back-btn { background: none; border: none; color: var(--neon-red); font-size: 14px; cursor: pointer; padding: 0; font-weight: 700; text-shadow: 0 0 5px var(--neon-red-glow); }
+        .title-big { font-size: 20px; font-weight: 900; color: #fff; text-align: center; margin-bottom: 15px; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-red); }
+        
+        .controls-box { background: var(--card-bg); border-radius: 16px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,0,60,0.3); }
+        .input-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .bet-input { flex: 1; padding: 15px; background: #000; border: 1px solid #444; border-radius: 10px; color: #fff; font-size: 16px; font-family: 'Montserrat'; text-align: center; font-weight: 700; }
+        .bet-input:focus { outline: none; border-color: var(--neon-red); }
+        
+        .btn-primary { flex: 1; background: var(--neon-red); color: #fff; border: none; border-radius: 10px; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 15px var(--neon-red-glow); transition: 0.2s; }
+        .btn-primary:active { transform: scale(0.95); }
+        .btn-cashout { width: 100%; background: var(--neon-green); color: #000; border: none; border-radius: 10px; font-weight: 900; font-size: 16px; padding: 15px; cursor: pointer; text-transform: uppercase; display: none; box-shadow: 0 0 20px rgba(0,255,102,0.4); }
+        
+        .status-text { text-align: center; font-size: 14px; margin-bottom: 10px; font-weight: 700; color: #aaa; }
 
-        /* --- ИГРА МИНЫ --- */
-        #game-screen { display: none; position: relative; z-index: 10; padding: 20px; }
-        .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        
-        .game-controls { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,0,60,0.3); }
-        .bet-row { display: flex; gap: 10px; margin-bottom: 15px; }
-        .bet-input { flex: 1; padding: 12px; background: #000; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 16px; font-family: 'Montserrat'; text-align: center; }
-        .bet-input:focus { outline: none; border-color: var(--neon-red); box-shadow: 0 0 10px rgba(255,0,60,0.3); }
-        
-        .play-btn { flex: 1; background: var(--neon-red); color: #fff; border: none; border-radius: 8px; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 15px rgba(255,0,60,0.5); }
-        .play-btn:active { transform: scale(0.98); }
-        
-        .cashout-btn { width: 100%; background: var(--neon-green); color: #000; border: none; border-radius: 8px; font-weight: 900; font-size: 16px; padding: 15px; cursor: pointer; text-transform: uppercase; display: none; box-shadow: 0 0 20px rgba(0,255,102,0.4); }
-        .cashout-btn:active { transform: scale(0.98); }
-
-        /* Сетка мин 5x5 */
+        /* ====== МИНЫ ====== */
         .grid-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 0 auto; max-width: 400px; }
-        .cell {
-            aspect-ratio: 1 / 1;
-            background: var(--cell-bg);
-            border-radius: 8px;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            transition: 0.15s;
-            border: 1px solid #3a0a10;
-            box-shadow: inset 0 2px 4px rgba(255,0,60,0.05);
-        }
+        .cell { aspect-ratio: 1 / 1; background: var(--cell-bg); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; transition: 0.15s; border: 1px solid #3a0a10; }
         .cell:active { transform: scale(0.9); }
-        .cell.revealed-gem { background: #1a0a0a; border: 1px solid #fff; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
-        .cell.revealed-bomb { background: #3a0008; border: 1px solid var(--neon-red); box-shadow: 0 0 20px var(--neon-red); }
+        .cell.gem { background: #1a0a0a; border: 1px solid #fff; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
+        .cell.bomb { background: #3a0008; border: 1px solid var(--neon-red); box-shadow: 0 0 20px var(--neon-red); }
         .cell.disabled { pointer-events: none; }
 
-        /* --- ИГРА РАКЕТКА (CRASH) --- */
-        #rocket-screen { display: none; position: relative; z-index: 10; padding: 20px; height: 100vh; box-sizing: border-box; flex-direction: column; }
-        
-        /* История иксов */
-        .crash-history { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 5px; }
+        /* ====== РАКЕТКА ====== */
+        .crash-history { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; }
         .crash-history::-webkit-scrollbar { display: none; }
-        .history-item { padding: 5px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; white-space: nowrap; }
-        .history-red { background: rgba(255,0,60,0.15); color: var(--neon-red); border: 1px solid var(--neon-red); text-shadow: 0 0 5px var(--neon-red); }
-        .history-green { background: rgba(0,255,102,0.15); color: var(--neon-green); border: 1px solid var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
+        .history-item { padding: 5px 12px; border-radius: 12px; font-weight: 900; font-size: 12px; white-space: nowrap; }
+        .history-red { background: rgba(255,0,60,0.15); color: var(--neon-red); border: 1px solid var(--neon-red); }
+        .history-green { background: rgba(0,255,102,0.15); color: var(--neon-green); border: 1px solid var(--neon-green); }
+        
+        .rocket-stage { height: 250px; position: relative; background: #000; border: 1px solid rgba(255,0,60,0.3); border-radius: 16px; overflow: hidden; margin-bottom: 15px; }
+        .rocket-multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: 900; color: var(--neon-red); z-index: 3; text-shadow: 0 0 20px var(--neon-red-glow); }
+        .rocket-visual { position: absolute; font-size: 30px; z-index: 2; transition: bottom 0.1s linear, left 0.1s linear; }
+        .rocket-trail-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
 
-        .rocket-stage {
-            flex: 1; position: relative; background: #050505;
-            border: 1px solid rgba(255,0,60,0.3); border-radius: 16px;
-            overflow: hidden; margin-bottom: 15px;
-            box-shadow: inset 0 0 50px rgba(255,0,60,0.1);
+        /* ====== МОНЕТКА (COIN) ====== */
+        .coin-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; perspective: 1000px; }
+        .coin {
+            width: 150px; height: 150px; position: relative; transform-style: preserve-3d;
+            transition: transform 2s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
+        .coin-side {
+            position: absolute; width: 100%; height: 100%; border-radius: 50%;
+            background: var(--card-bg); border: 4px solid var(--neon-red);
+            display: flex; justify-content: center; align-items: center; font-size: 60px;
+            backface-visibility: hidden; box-shadow: 0 0 30px var(--neon-red-glow);
+        }
+        .coin-tails { transform: rotateY(180deg); border-color: var(--neon-gold); box-shadow: 0 0 30px rgba(255,204,0,0.6); }
+        .coin-heads { transform: rotateY(0deg); }
+        
+        .coin.flipping-heads { transform: rotateY(1800deg); }
+        .coin.flipping-tails { transform: rotateY(1980deg); }
 
-        /* SVG Дуга */
-        .rocket-trail-svg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; pointer-events: none;
+        /* ====== СЛОТЫ ====== */
+        .slots-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; height: 120px; }
+        .slot {
+            width: 80px; height: 120px; background: #000; border: 2px solid var(--neon-red);
+            border-radius: 10px; display: flex; justify-content: center; align-items: center;
+            font-size: 50px; box-shadow: inset 0 0 20px rgba(255,0,60,0.5);
         }
+        .slot.spinning { animation: slotBlur 0.2s infinite; }
+        @keyframes slotBlur { 0% { opacity: 0.8; transform: translateY(-5px); } 50% { opacity: 1; transform: translateY(5px); } 100% { opacity: 0.8; transform: translateY(-5px); } }
 
-        .rocket-multiplier {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 48px; font-weight: 900; color: var(--neon-red);
-            text-shadow: 0 0 20px var(--neon-red), 0 0 40px var(--neon-red-glow);
-            z-index: 3; transition: transform 0.1s;
-        }
-
-        .rocket-visual {
-            position: absolute; font-size: 40px; transition: bottom 0.1s linear, left 0.1s linear;
-            filter: drop-shadow(0 0 10px var(--neon-red));
-            z-index: 2;
-        }
-
-        .crash-text {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: var(--neon-red); font-size: 30px; font-weight: 900; text-shadow: 0 0 20px var(--neon-red);
-            display: none; z-index: 4; text-align: center; width: 100%;
-        }
+        /* ====== ПРОФИЛЬ ====== */
+        .profile-card { background: var(--card-bg); border: 1px solid var(--neon-red); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; }
+        .profile-avatar { width: 80px; height: 80px; background: var(--neon-red); border-radius: 50%; margin: 0 auto 15px; display: flex; justify-content: center; align-items: center; font-size: 32px; font-weight: 900; box-shadow: 0 0 20px var(--neon-red-glow); }
+        .profile-name { font-size: 20px; font-weight: 900; margin-bottom: 5px; }
+        .profile-balance { color: var(--neon-red); font-size: 24px; font-weight: 900; }
+        .bonus-btn { width: 100%; padding: 15px; background: var(--neon-gold); color: #000; border: none; border-radius: 10px; font-weight: 900; margin-top: 20px; cursor: pointer; box-shadow: 0 0 15px rgba(255,204,0,0.5); }
     </style>
 </head>
 <body>
 
-    <!-- ДЫМ НА ФОНЕ -->
+    <!-- ФОН: ДЫМ -->
     <div class="smoke-container">
-        <div class="smoke"></div><div class="smoke"></div><div class="smoke"></div>
-        <div class="smoke"></div><div class="smoke red"></div><div class="smoke red"></div><div class="smoke"></div>
+        <div class="smoke"></div><div class="smoke"></div><div class="smoke red"></div>
+        <div class="smoke"></div><div class="smoke red"></div><div class="smoke"></div>
     </div>
 
     <!-- ЭКРАН ПРИВЕТСТВИЯ -->
-    <div id="welcome-screen">
-        <h1 class="logo"><span class="text-huss">HUSS</span><span class="text-casino">CASINO</span></h1>
-        <button class="enter-btn" onclick="enterApp()">Войти в игру</button>
+    <div id="welcome-screen" style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 10;">
+        <h1 style="font-size: 42px; font-weight: 900; margin: 0; line-height: 1; letter-spacing: 2px; text-align: center;">
+            <span style="color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red), 0 0 30px var(--neon-red-glow);">HUSS</span>
+            <span style="color: #fff; font-weight: 700; font-size: 28px; display: block; margin-top: 5px;">CASINO</span>
+        </h1>
+        <button onclick="enterApp()" style="margin-top: 50px; background: transparent; color: var(--neon-red); border: 2px solid var(--neon-red); padding: 15px 40px; font-size: 18px; font-weight: 700; border-radius: 8px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 15px var(--neon-red-glow);">Войти в игру</button>
     </div>
 
-    <!-- ГЛАВНЫЙ ЭКРАН (МЕНЮ) -->
-    <div id="main-app">
-        <header>
-            <div class="user-info">
-                <div class="avatar" id="avatar-letter">H</div>
-                <div class="username" id="username-display">Гость</div>
-            </div>
-        </header>
-
-        <div class="balance-card">
-            <div class="balance-title">Ваш баланс</div>
-            <div class="balance-amount"><span id="balance-display">0</span> <span style="font-size:24px;">🪙</span></div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="game-card" onclick="openMines()">
-                <div style="font-size: 40px; margin-bottom: 10px; filter: drop-shadow(0 0 10px var(--neon-red));">💣</div>
-                <div style="font-size: 14px; font-weight: 700; color: var(--neon-red);">Мины</div>
-            </div>
-            <div class="game-card" onclick="openRocket()">
-                <div style="font-size: 40px; margin-bottom: 10px; filter: drop-shadow(0 0 10px var(--neon-red));">🚀</div>
-                <div style="font-size: 14px; font-weight: 700; color: var(--neon-red);">Ракетка</div>
+    <!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+    <div class="app-container" id="main-app">
+        <!-- Шапка -->
+        <div class="app-header">
+            <div class="logo-mini">HUSS CASINO</div>
+            <div class="balance-badge">
+                <span id="header-balance">0</span> 🪙
             </div>
         </div>
-    </div>
 
-    <!-- ЭКРАН ИГРЫ "МИНЫ" -->
-    <div id="game-screen">
-        <div class="game-header">
-            <button class="back-btn" onclick="goBack('mines')">← Назад</button>
-            <div class="game-title-big">МИНЫ</div>
-            <div style="font-size: 14px; font-weight: 700; color: var(--neon-red);"><span id="game-balance">0</span> 🪙</div>
+        <!-- Контентная часть -->
+        <div class="content-area">
+
+            <!-- ЭКРАН: ГЛАВНОЕ МЕНЮ -->
+            <div id="screen-menu" class="screen active">
+                <div class="title-big">ВЫБЕРИ ИГРУ</div>
+                <div class="games-grid">
+                    <div class="game-card" onclick="openGame('mines')">
+                        <div class="game-icon">💣</div>
+                        <div class="game-name">МИНЫ</div>
+                    </div>
+                    <div class="game-card" onclick="openGame('rocket')">
+                        <div class="game-icon">🚀</div>
+                        <div class="game-name">РАКЕТКА</div>
+                    </div>
+                    <div class="game-card" onclick="openGame('coin')">
+                        <div class="game-icon">🪙</div>
+                        <div class="game-name">МОНЕТКА</div>
+                    </div>
+                    <div class="game-card" onclick="openGame('slots')">
+                        <div class="game-icon">🎰</div>
+                        <div class="game-name">СЛОТЫ</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН: МИНЫ -->
+            <div id="screen-mines" class="screen">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <button class="back-btn" onclick="goHome()">← Назад</button>
+                    <div style="font-weight: 900; color: var(--neon-red);">МИНЫ</div>
+                    <div style="width: 50px;"></div>
+                </div>
+                
+                <div class="controls-box">
+                    <div class="input-row" id="mines-bet-row">
+                        <input type="number" id="mines-bet-input" class="bet-input" value="100" min="10">
+                        <button class="btn-primary" onclick="startMinesGame()">Играть</button>
+                    </div>
+                    <div class="status-text" id="mines-status">Сделай ставку и нажми «Играть»</div>
+                    <div style="text-align: center; font-size: 20px; font-weight: 900; color: var(--neon-green); margin-bottom: 10px; display: none;" id="mines-multiplier">x<span id="mines-mult-val">1.00</span></div>
+                    <button class="btn-cashout" id="mines-cashout-btn" onclick="cashOutMines()">Забрать <span id="mines-cashout-val">0</span> 🪙</button>
+                </div>
+
+                <div class="grid-container" id="mines-grid"></div>
+            </div>
+
+            <!-- ЭКРАН: РАКЕТКА -->
+            <div id="screen-rocket" class="screen">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <button class="back-btn" onclick="goHome()">← Назад</button>
+                    <div style="font-weight: 900; color: var(--neon-red);">РАКЕТКА</div>
+                    <div style="width: 50px;"></div>
+                </div>
+
+                <div class="crash-history" id="rocket-history"></div>
+
+                <div class="rocket-stage">
+                    <svg class="rocket-trail-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="trailGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#00ff66" />
+                                <stop offset="100%" stop-color="#ff003c" />
+                            </linearGradient>
+                        </defs>
+                        <path id="rocket-path" d="" stroke="url(#trailGradient)" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    </svg>
+                    <div class="rocket-multiplier" id="rocket-mult-display">x1.00</div>
+                    <div class="rocket-visual" id="rocket-visual" style="bottom: 10%; left: 10%;">🚀</div>
+                </div>
+
+                <div class="controls-box">
+                    <div class="input-row" id="rocket-bet-row">
+                        <input type="number" id="rocket-bet-input" class="bet-input" value="100" min="10">
+                        <button class="btn-primary" onclick="startRocketGame()">Взлет</button>
+                    </div>
+                    <div class="status-text" id="rocket-status">Сделай ставку и запускай!</div>
+                    <button class="btn-cashout" id="rocket-cashout-btn" onclick="cashOutRocket()">Забрать <span id="rocket-cashout-val">0</span> 🪙</button>
+                </div>
+            </div>
+
+            <!-- ЭКРАН: МОНЕТКА -->
+            <div id="screen-coin" class="screen">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <button class="back-btn" onclick="goHome()">← Назад</button>
+                    <div style="font-weight: 900; color: var(--neon-red);">МОНЕТКА</div>
+                    <div style="width: 50px;"></div>
+                </div>
+
+                <div class="coin-container">
+                    <div class="coin" id="coin">
+                        <div class="coin-side coin-heads">👑</div>
+                        <div class="coin-side coin-tails">🦅</div>
+                    </div>
+                </div>
+
+                <div class="controls-box">
+                    <div class="input-row" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button class="btn-primary" id="coin-heads-btn" onclick="startCoinGame('heads')" style="background: var(--neon-gold); color: #000;">ОРЁЛ (x1.9)</button>
+                        <button class="btn-primary" id="coin-tails-btn" onclick="startCoinGame('tails')">РЕШКА (x1.9)</button>
+                    </div>
+                    <div class="status-text" id="coin-status">Выбери сторону и сделай ставку</div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН: СЛОТЫ -->
+            <div id="screen-slots" class="screen">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <button class="back-btn" onclick="goHome()">← Назад</button>
+                    <div style="font-weight: 900; color: var(--neon-red);">СЛОТЫ</div>
+                    <div style="width: 50px;"></div>
+                </div>
+
+                <div class="slots-container">
+                    <div class="slot" id="slot1">🍒</div>
+                    <div class="slot" id="slot2">🍒</div>
+                    <div class="slot" id="slot3">🍒</div>
+                </div>
+
+                <div class="controls-box">
+                    <div class="input-row" id="slots-bet-row">
+                        <input type="number" id="slots-bet-input" class="bet-input" value="100" min="10">
+                        <button class="btn-primary" onclick="startSlotsGame()">Крутить</button>
+                    </div>
+                    <div class="status-text" id="slots-status">Собери 3 одинаковых!</div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН: ПРОФИЛЬ -->
+            <div id="screen-profile" class="screen">
+                <div class="title-big">ПРОФИЛЬ</div>
+                <div class="profile-card">
+                    <div class="profile-avatar" id="prof-avatar">H</div>
+                    <div class="profile-name" id="prof-name">Игрок</div>
+                    <div style="color: #888; font-size: 12px; margin-bottom: 10px;">Твой баланс:</div>
+                    <div class="profile-balance"><span id="prof-balance">0</span> 🪙</div>
+                    <button class="bonus-btn" onclick="claimBonus()">🎁 Забрать бонус (1000)</button>
+                </div>
+            </div>
+
         </div>
 
-        <div class="game-controls">
-            <div class="bet-row" id="bet-row">
-                <input type="number" id="bet-input" class="bet-input" value="100" min="10">
-                <button class="play-btn" id="play-btn" onclick="startMinesGame()">Играть</button>
+        <!-- НИЖНЕЕ МЕНЮ -->
+        <div class="bottom-nav">
+            <div class="nav-item active" id="nav-home" onclick="switchTab('menu')">
+                <div class="nav-icon">🏠</div>
+                <div>Главная</div>
             </div>
-            
-            <div style="text-align: center; margin-bottom: 10px; font-size: 14px;" id="status-text">
-                Сделай ставку и нажми «Играть»
-            </div>
-            
-            <div style="text-align: center; margin-bottom: 10px; font-weight: 900; font-size: 20px; color: #fff; display: none;" id="multiplier-display">
-                x<span id="multiplier-val">1.00</span>
-            </div>
-
-            <button class="cashout-btn" id="cashout-btn" onclick="cashOutMines()">
-                Забрать <span id="cashout-val">0</span> 🪙
-            </button>
-        </div>
-
-        <div class="grid-container" id="grid"></div>
-    </div>
-
-    <!-- ЭКРАН ИГРЫ "РАКЕТКА" -->
-    <div id="rocket-screen">
-        <div class="game-header">
-            <button class="back-btn" onclick="goBack('rocket')">← Назад</button>
-            <div class="game-title-big">РАКЕТКА</div>
-            <div style="font-size: 14px; font-weight: 700; color: var(--neon-red);"><span id="rocket-balance-display">0</span> 🪙</div>
-        </div>
-
-        <!-- История крашей -->
-        <div class="crash-history" id="crash-history"></div>
-
-        <div class="rocket-stage" id="rocket-stage">
-            <!-- SVG для дуги -->
-            <svg class="rocket-trail-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <defs>
-                    <linearGradient id="trailGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#00ff66" />
-                        <stop offset="50%" stop-color="#ffcc00" />
-                        <stop offset="100%" stop-color="#ff003c" />
-                    </linearGradient>
-                </defs>
-                <path id="rocket-path" d="" stroke="url(#trailGradient)" stroke-width="1.5" fill="none" stroke-linecap="round" />
-            </svg>
-
-            <div class="rocket-multiplier" id="rocket-multiplier-display">x1.00</div>
-            <div class="rocket-visual" id="rocket-visual" style="bottom: 10%; left: 10%;">🚀</div>
-            <div class="crash-text" id="crash-text">CRASHED!</div>
-        </div>
-
-        <div class="game-controls">
-            <div class="bet-row" id="rocket-bet-row">
-                <input type="number" id="rocket-bet-input" class="bet-input" value="100" min="10">
-                <button class="play-btn" id="rocket-play-btn" onclick="startRocketGame()">Взлет</button>
-            </div>
-            <button class="cashout-btn" id="rocket-cashout-btn" onclick="cashOutRocket()" style="background: var(--neon-red); color: #fff;">
-                Забрать <span id="rocket-cashout-val">0</span> 🪙
-            </button>
-            <div style="text-align: center; margin-top: 10px; font-size: 14px; color: #888;" id="rocket-status">
-                Сделай ставку и запускай ракету!
+            <div class="nav-item" id="nav-profile" onclick="switchTab('profile')">
+                <div class="nav-icon">👤</div>
+                <div>Профиль</div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- ИНИЦИАЛИЗАЦИЯ И БАЗА ---
         const tg = window.Telegram.WebApp;
         if (tg) { tg.ready(); tg.expand(); }
 
-        // --- ОБЩЕЕ СОСТОЯНИЕ ---
-        let balance = 1000;
+        // Загрузка баланса из памяти устройства
+        let balance = parseInt(localStorage.getItem('huss_balance'));
+        if (isNaN(balance)) balance = 1000;
+        
+        let tgName = 'Игрок';
         if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            const name = tg.initDataUnsafe.user.first_name || 'Игрок';
-            document.getElementById('username-display').innerText = name;
-            document.getElementById('avatar-letter').innerText = name.charAt(0).toUpperCase();
+            tgName = tg.initDataUnsafe.user.first_name || 'Игрок';
         }
+        document.getElementById('prof-name').innerText = tgName;
+        document.getElementById('prof-avatar').innerText = tgName.charAt(0).toUpperCase();
 
         function updateBalanceUI() {
-            document.getElementById('balance-display').innerText = balance;
-            document.getElementById('game-balance').innerText = balance;
-            document.getElementById('rocket-balance-display').innerText = balance;
+            localStorage.setItem('huss_balance', balance);
+            document.getElementById('header-balance').innerText = balance;
+            document.getElementById('prof-balance').innerText = balance;
         }
 
         function enterApp() {
             document.getElementById('welcome-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('main-app').style.display = 'flex';
             updateBalanceUI();
             if (tg) tg.HapticFeedback.impactOccurred('medium');
         }
 
-        function showAlert(msg) {
-            if (tg) tg.showAlert(msg); else alert(msg);
-        }
-
-        function goBack(game) {
-            if (game === 'mines') {
-                document.getElementById('game-screen').style.display = 'none';
-                resetMinesBoard();
-            } else if (game === 'rocket') {
-                document.getElementById('rocket-screen').style.display = 'none';
-                resetRocketGame();
+        // --- НАВИГАЦИЯ ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            
+            if (tabId === 'menu') {
+                document.getElementById('nav-home').classList.add('active');
+                document.getElementById('screen-menu').classList.add('active');
+            } else if (tabId === 'profile') {
+                document.getElementById('nav-profile').classList.add('active');
+                document.getElementById('screen-profile').classList.add('active');
             }
-            document.getElementById('main-app').style.display = 'block';
         }
 
-        // ==========================================
-        // --- ЛОГИКА ИГРЫ "МИНЫ" ---
-        // ==========================================
-        let mines = [];
-        let revealedCells = 0;
-        let isPlayingMines = false;
-        let currentMultiplier = 1.0;
-        let minesCount = 3;
-        let safeCellsTotal = 22;
-        let currentMinesBet = 0;
-
-        function openMines() {
-            document.getElementById('main-app').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-            resetMinesBoard();
+        function openGame(gameId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById('screen-' + gameId).classList.add('active');
+            if (gameId === 'mines') resetMines();
+            if (gameId === 'rocket') resetRocket();
         }
 
+        function goHome() {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById('screen-menu').classList.add('active');
+            switchTab('menu');
+        }
+
+        function claimBonus() {
+            balance += 1000;
+            updateBalanceUI();
+            if (tg) tg.HapticFeedback.notificationOccurred('success');
+            alert('Бонус 1000 монет получен!');
+        }
+
+        function checkBet(inputId) {
+            const bet = parseInt(document.getElementById(inputId).value);
+            if (isNaN(bet) || bet < 10) { alert('Минимальная ставка 10!'); return null; }
+            if (bet > balance) { alert('Недостаточно средств!'); return null; }
+            return bet;
+        }
+
+        function showAlert(msg) { if (tg) tg.showAlert(msg); else alert(msg); }
+
+        // ==========================================
+        // --- ИГРА 1: МИНЫ ---
+        // ==========================================
+        let mines = [], minesRevealed = 0, minesPlaying = false, minesMult = 1.0, minesBet = 0;
+        
         function createMinesGrid() {
-            const grid = document.getElementById('grid');
+            const grid = document.getElementById('mines-grid');
             grid.innerHTML = '';
             for (let i = 0; i < 25; i++) {
                 const cell = document.createElement('div');
@@ -360,289 +437,281 @@
             }
         }
 
-        function resetMinesBoard() {
-            isPlayingMines = false;
-            revealedCells = 0;
-            currentMultiplier = 1.0;
-            
-            document.getElementById('bet-row').style.display = 'flex';
-            document.getElementById('cashout-btn').style.display = 'none';
-            document.getElementById('multiplier-display').style.display = 'none';
-            document.getElementById('status-text').innerText = "Сделай ставку и нажми «Играть»";
-            document.getElementById('status-text').style.color = "#fff";
-            
+        function resetMines() {
+            minesPlaying = false; minesRevealed = 0; minesMult = 1.0;
+            document.getElementById('mines-bet-row').style.display = 'flex';
+            document.getElementById('mines-cashout-btn').style.display = 'none';
+            document.getElementById('mines-multiplier').style.display = 'none';
+            document.getElementById('mines-status').innerText = "Сделай ставку";
             createMinesGrid();
         }
 
         function startMinesGame() {
-            const bet = parseInt(document.getElementById('bet-input').value);
-            if (isNaN(bet) || bet < 10) return showAlert('Минимальная ставка 10!');
-            if (bet > balance) return showAlert('Недостаточно средств!');
-
-            balance -= bet;
-            currentMinesBet = bet;
-            updateBalanceUI();
-
+            const bet = checkBet('mines-bet-input');
+            if (!bet) return;
+            
+            balance -= bet; minesBet = bet; updateBalanceUI();
+            
             mines = [];
-            while (mines.length < minesCount) {
+            while (mines.length < 3) {
                 const r = Math.floor(Math.random() * 25);
                 if (!mines.includes(r)) mines.push(r);
             }
-
-            isPlayingMines = true;
-            revealedCells = 0;
-            currentMultiplier = 1.0;
-
-            document.getElementById('bet-row').style.display = 'none';
-            document.getElementById('cashout-btn').style.display = 'block';
-            document.getElementById('multiplier-display').style.display = 'block';
-            document.getElementById('status-text').innerText = "Открывай клетки!";
-            document.getElementById('status-text').style.color = "#fff";
-            document.getElementById('cashout-val').innerText = currentMinesBet;
-            document.getElementById('multiplier-val').innerText = currentMultiplier.toFixed(2);
-
-            createMinesGrid(); 
+            
+            minesPlaying = true; minesRevealed = 0; minesMult = 1.0;
+            
+            document.getElementById('mines-bet-row').style.display = 'none';
+            document.getElementById('mines-cashout-btn').style.display = 'block';
+            document.getElementById('mines-multiplier').style.display = 'block';
+            document.getElementById('mines-status').innerText = "Открывай клетки!";
+            document.getElementById('mines-mult-val').innerText = "1.00";
+            document.getElementById('mines-cashout-val').innerText = minesBet;
+            createMinesGrid();
         }
 
-        function clickMineCell(index, cellElement) {
-            if (!isPlayingMines || cellElement.classList.contains('disabled')) return;
-
+        function clickMineCell(index, el) {
+            if (!minesPlaying || el.classList.contains('disabled')) return;
+            
             if (mines.includes(index)) {
-                cellElement.classList.add('revealed-bomb', 'disabled');
-                cellElement.innerText = '💣';
-                minesGameOver();
-            } else {
-                cellElement.classList.add('revealed-gem', 'disabled');
-                cellElement.innerText = '💎';
-                revealedCells++;
-
-                currentMultiplier = 1 + (revealedCells * 0.15) + (Math.pow(revealedCells, 1.5) * 0.05);
+                el.classList.add('bomb', 'disabled'); el.innerText = '💣';
+                minesPlaying = false;
+                if (tg) tg.HapticFeedback.notificationOccurred('error');
+                document.getElementById('mines-status').innerText = "Подрыв!";
+                document.getElementById('mines-cashout-btn').style.display = 'none';
                 
-                const cashVal = Math.floor(currentMinesBet * currentMultiplier);
-                document.getElementById('multiplier-val').innerText = currentMultiplier.toFixed(2);
-                document.getElementById('cashout-val').innerText = cashVal;
+                document.querySelectorAll('.cell').forEach(c => {
+                    const i = parseInt(c.dataset.index);
+                    if (mines.includes(i) && c.innerText !== '💣') { c.classList.add('bomb'); c.innerText = '💣'; }
+                    c.classList.add('disabled');
+                });
+                setTimeout(resetMines, 2500);
+            } else {
+                el.classList.add('gem', 'disabled'); el.innerText = '💎';
+                minesRevealed++;
+                minesMult = 1 + (minesRevealed * 0.2) + (Math.pow(minesRevealed, 1.5) * 0.1);
+                
+                const cashVal = Math.floor(minesBet * minesMult);
+                document.getElementById('mines-mult-val').innerText = minesMult.toFixed(2);
+                document.getElementById('mines-cashout-val').innerText = cashVal;
                 if (tg) tg.HapticFeedback.impactOccurred('light');
-
-                if (revealedCells === safeCellsTotal) {
-                    cashOutMines();
-                }
+                
+                if (minesRevealed === 22) cashOutMines();
             }
         }
 
-        function minesGameOver() {
-            isPlayingMines = false;
-            if (tg) tg.HapticFeedback.notificationOccurred('error');
-            
-            document.querySelectorAll('.cell').forEach(c => {
-                const idx = parseInt(c.dataset.index);
-                if (mines.includes(idx) && c.innerText !== '💣') {
-                    c.classList.add('revealed-bomb');
-                    c.innerText = '💣';
-                }
-                c.classList.add('disabled');
-            });
-
-            document.getElementById('status-text').innerText = "Вы подорвались!";
-            document.getElementById('status-text').style.color = "var(--neon-red)";
-            document.getElementById('cashout-btn').style.display = 'none';
-            
-            setTimeout(resetMinesBoard, 2500);
-        }
-
         function cashOutMines() {
-            if (!isPlayingMines || revealedCells === 0) return;
-            
-            isPlayingMines = false;
-            const winAmount = Math.floor(currentMinesBet * currentMultiplier);
-            balance += winAmount;
-            updateBalanceUI();
-
+            if (!minesPlaying || minesRevealed === 0) return;
+            minesPlaying = false;
+            const win = Math.floor(minesBet * minesMult);
+            balance += win; updateBalanceUI();
             if (tg) tg.HapticFeedback.notificationOccurred('success');
-            document.getElementById('status-text').innerText = `Выигрыш: ${winAmount} монет!`;
-            document.getElementById('status-text').style.color = "#00ff66";
-            document.getElementById('cashout-btn').style.display = 'none';
-
-            // Показ мин при выигрыше
+            document.getElementById('mines-status').innerText = `Выигрыш: ${win} 🪙`;
+            document.getElementById('mines-cashout-btn').style.display = 'none';
+            
+            // Показ мин
             document.querySelectorAll('.cell').forEach(c => {
-                const idx = parseInt(c.dataset.index);
-                if (mines.includes(idx) && c.innerText !== '💣') {
-                    c.classList.add('revealed-bomb');
-                    c.innerText = '💣';
-                }
+                const i = parseInt(c.dataset.index);
+                if (mines.includes(i) && c.innerText !== '💣') { c.classList.add('bomb'); c.innerText = '💣'; }
                 c.classList.add('disabled');
             });
-
-            setTimeout(resetMinesBoard, 3000);
+            setTimeout(resetMines, 3000);
         }
 
         // ==========================================
-        // --- ЛОГИКА ИГРЫ "РАКЕТКА" (CRASH) ---
+        // --- ИГРА 2: РАКЕТКА ---
         // ==========================================
-        let isPlayingRocket = false;
-        let rocketInterval = null;
-        let rocketMultiplier = 1.00;
-        let rocketCrashPoint = 1.00;
-        let currentRocketBet = 0;
-        let crashHistory = [];
+        let rocketPlaying = false, rocketInterval = null, rocketMult = 1.0, rocketCrash = 1.0, rocketBet = 0;
+        let history = [];
 
-        function openRocket() {
-            document.getElementById('main-app').style.display = 'none';
-            document.getElementById('rocket-screen').style.display = 'flex';
-            resetRocketGame();
-            renderCrashHistory();
-        }
-
-        function resetRocketGame() {
-            clearInterval(rocketInterval);
-            isPlayingRocket = false;
-            rocketMultiplier = 1.00;
-            
+        function resetRocket() {
+            clearInterval(rocketInterval); rocketPlaying = false;
             document.getElementById('rocket-bet-row').style.display = 'flex';
             document.getElementById('rocket-cashout-btn').style.display = 'none';
-            document.getElementById('rocket-multiplier-display').innerText = "x1.00";
-            document.getElementById('rocket-multiplier-display').style.color = "var(--neon-red)";
-            document.getElementById('crash-text').style.display = 'none';
-            
-            // Сброс ракеты в начало
-            const rocketEl = document.getElementById('rocket-visual');
-            rocketEl.style.bottom = '10%';
-            rocketEl.style.left = '10%';
-            
-            // Очистка SVG дуги
+            document.getElementById('rocket-mult-display').innerText = "x1.00";
+            document.getElementById('rocket-status').innerText = "Сделай ставку";
+            document.getElementById('rocket-visual').style.bottom = '10%';
+            document.getElementById('rocket-visual').style.left = '10%';
             document.getElementById('rocket-path').setAttribute('d', '');
-            
-            document.getElementById('rocket-status').innerText = "Сделай ставку и запускай ракету!";
-            document.getElementById('rocket-status').style.color = "#888";
+            renderHistory();
         }
 
-        // Функция для добавления иксов в историю
-        function addToHistory(multiplier) {
-            crashHistory.unshift(multiplier);
-            if (crashHistory.length > 10) crashHistory.pop(); // Оставляем только 10 последних
-            renderCrashHistory();
-        }
-
-        // Отрисовка истории
-        function renderCrashHistory() {
-            const container = document.getElementById('crash-history');
-            container.innerHTML = '';
-            crashHistory.forEach(val => {
-                const div = document.createElement('div');
-                const isGreen = parseFloat(val) >= 2.0; // Если икс 2 и выше - зеленый
-                div.className = `history-item ${isGreen ? 'history-green' : 'history-red'}`;
-                div.innerText = `x${val}`;
-                container.appendChild(div);
+        function renderHistory() {
+            const box = document.getElementById('rocket-history');
+            box.innerHTML = '';
+            history.slice(0, 10).forEach(v => {
+                const d = document.createElement('div');
+                d.className = `history-item ${parseFloat(v) >= 2.0 ? 'history-green' : 'history-red'}`;
+                d.innerText = `x${v}`;
+                box.appendChild(d);
             });
         }
 
         function startRocketGame() {
-            const bet = parseInt(document.getElementById('rocket-bet-input').value);
-            if (isNaN(bet) || bet < 10) return showAlert('Минимальная ставка 10!');
-            if (bet > balance) return showAlert('Недостаточно средств!');
-
-            balance -= bet;
-            currentRocketBet = bet;
-            updateBalanceUI();
-
-            // Генерация точки краша
-            const randomSeed = Math.random();
-            rocketCrashPoint = Math.max(1.1, (100 / (100 - randomSeed * 99))).toFixed(2);
-
-            isPlayingRocket = true;
-            rocketMultiplier = 1.00;
+            const bet = checkBet('rocket-bet-input');
+            if (!bet) return;
             
+            balance -= bet; rocketBet = bet; updateBalanceUI();
+            
+            const seed = Math.random();
+            rocketCrash = Math.max(1.1, (100 / (100 - seed * 99))).toFixed(2);
+            
+            rocketPlaying = true; rocketMult = 1.0;
             document.getElementById('rocket-bet-row').style.display = 'none';
             document.getElementById('rocket-cashout-btn').style.display = 'block';
-            document.getElementById('rocket-cashout-btn').style.background = "#00ff66";
-            document.getElementById('rocket-cashout-btn').style.color = "#000";
-            document.getElementById('rocket-cashout-val').innerText = currentRocketBet;
-            document.getElementById('rocket-status').innerText = "Ракета летит! Забирай до краша!";
-            document.getElementById('rocket-status').style.color = "#00ff66";
+            document.getElementById('rocket-status').innerText = "Летит!";
             
-            document.getElementById('crash-text').style.display = 'none';
-            document.getElementById('rocket-multiplier-display').style.color = "var(--neon-red)";
-            
-            const rocketEl = document.getElementById('rocket-visual');
-            rocketEl.style.bottom = '10%';
-            rocketEl.style.left = '10%';
-            document.getElementById('rocket-path').setAttribute('d', '');
-
-            let startTime = Date.now();
-
+            let start = Date.now();
             rocketInterval = setInterval(() => {
-                let elapsed = (Date.now() - startTime) / 1000;
+                let el = (Date.now() - start) / 1000;
+                rocketMult = 1 + (el * 0.2) + Math.pow(el, 2) * 0.1;
                 
-                rocketMultiplier = 1 + (elapsed * 0.15) + Math.pow(elapsed, 2) * 0.08;
+                document.getElementById('rocket-mult-display').innerText = "x" + rocketMult.toFixed(2);
+                document.getElementById('rocket-cashout-val').innerText = Math.floor(rocketBet * rocketMult);
                 
-                document.getElementById('rocket-multiplier-display').innerText = "x" + rocketMultiplier.toFixed(2);
-                const cashVal = Math.floor(currentRocketBet * rocketMultiplier);
-                document.getElementById('rocket-cashout-val').innerText = cashVal;
-
-                // Двигаем ракету
-                let bottomPos = 10 + (rocketMultiplier - 1) * 15;
-                let leftPos = 10 + (rocketMultiplier - 1) * 10;
-                if(bottomPos > 80) bottomPos = 80;
-                if(leftPos > 80) leftPos = 80;
+                let btm = 10 + (rocketMult - 1) * 20; if(btm > 80) btm = 80;
+                let lft = 10 + (rocketMult - 1) * 15; if(lft > 80) lft = 80;
+                document.getElementById('rocket-visual').style.bottom = btm + '%';
+                document.getElementById('rocket-visual').style.left = lft + '%';
+                document.getElementById('rocket-path').setAttribute('d', `M 10 90 Q ${lft/2} 90, ${lft} ${100 - btm}`);
                 
-                rocketEl.style.bottom = bottomPos + '%';
-                rocketEl.style.left = leftPos + '%';
-
-                // Рисуем дугу
-                // Начало: x=10, y=90 (в SVG координатах)
-                // Конец: x=leftPos, y=(100-bottomPos)
-                const pathD = `M 10 90 Q ${leftPos / 2} 90, ${leftPos} ${100 - bottomPos}`;
-                document.getElementById('rocket-path').setAttribute('d', pathD);
-
-                // Проверка на краш
-                if (rocketMultiplier >= parseFloat(rocketCrashPoint)) {
-                    crashRocket();
+                if (rocketMult >= parseFloat(rocketCrash)) {
+                    clearInterval(rocketInterval);
+                    rocketPlaying = false;
+                    if (tg) tg.HapticFeedback.notificationOccurred('error');
+                    
+                    history.unshift(rocketCrash);
+                    document.getElementById('rocket-status').innerText = `Краш на x${rocketCrash}`;
+                    document.getElementById('rocket-mult-display').innerText = "x" + rocketCrash;
+                    document.getElementById('rocket-cashout-btn').style.display = 'none';
+                    setTimeout(resetRocket, 3000);
                 }
             }, 50);
         }
 
-        function crashRocket() {
-            clearInterval(rocketInterval);
-            isPlayingRocket = false;
-            if (tg) tg.HapticFeedback.notificationOccurred('error');
-
-            document.getElementById('crash-text').style.display = 'block';
-            document.getElementById('rocket-multiplier-display').innerText = "x" + rocketCrashPoint;
-            document.getElementById('rocket-multiplier-display').style.color = "#ff0000";
-            document.getElementById('rocket-status').innerText = `Краш на x${rocketCrashPoint}. Вы потеряли ставку.`;
-            document.getElementById('rocket-status').style.color = "var(--neon-red)";
-            
-            document.getElementById('rocket-cashout-btn').style.display = 'none';
-
-            // Добавляем в историю
-            addToHistory(rocketCrashPoint);
-
-            setTimeout(resetRocketGame, 3000);
-        }
-
         function cashOutRocket() {
-            if (!isPlayingRocket) return;
-            
-            clearInterval(rocketInterval);
-            isPlayingRocket = false;
-
-            const winAmount = Math.floor(currentRocketBet * rocketMultiplier);
-            balance += winAmount;
-            updateBalanceUI();
-
+            if (!rocketPlaying) return;
+            clearInterval(rocketInterval); rocketPlaying = false;
+            const win = Math.floor(rocketBet * rocketMult);
+            balance += win; updateBalanceUI();
             if (tg) tg.HapticFeedback.notificationOccurred('success');
             
-            document.getElementById('rocket-status').innerText = `Успел! Выигрыш: ${winAmount} монет!`;
-            document.getElementById('rocket-status').style.color = "#00ff66";
+            history.unshift(rocketMult.toFixed(2));
+            document.getElementById('rocket-status').innerText = `Успел! +${win} 🪙`;
             document.getElementById('rocket-cashout-btn').style.display = 'none';
-            document.getElementById('rocket-multiplier-display').style.color = "#00ff66";
-
-            // Добавляем в историю (округленный)
-            addToHistory(rocketMultiplier.toFixed(2));
-
-            setTimeout(resetRocketGame, 3000);
+            setTimeout(resetRocket, 3000);
         }
 
-        // --- ПАРАЛЛАКС ДЫМА ---
+        // ==========================================
+        // --- ИГРА 3: МОНЕТКА ---
+        // ==========================================
+        let coinPlaying = false;
+
+        function startCoinGame(choice) {
+            if (coinPlaying) return;
+            // Для простоты берем фиксированную ставку 100
+            const bet = 100;
+            if (balance < bet) return showAlert('Нужно 100 монет!');
+            
+            balance -= bet; updateBalanceUI();
+            coinPlaying = true;
+            
+            const coin = document.getElementById('coin');
+            coin.className = 'coin'; // reset
+            
+            // Рандом 50/50
+            const result = Math.random() < 0.5 ? 'heads' : 'tails';
+            
+            // Триггер анимации
+            setTimeout(() => {
+                coin.classList.add(result === 'heads' ? 'flipping-heads' : 'flipping-tails');
+            }, 50);
+
+            document.getElementById('coin-status').innerText = "Монетка крутится...";
+
+            setTimeout(() => {
+                coinPlaying = false;
+                if (result === choice) {
+                    balance += Math.floor(bet * 1.9);
+                    updateBalanceUI();
+                    document.getElementById('coin-status').innerText = `Победа! Выпало: ${result === 'heads' ? 'ОРЁЛ 👑' : 'РЕШКА 🦅'}`;
+                    if (tg) tg.HapticFeedback.notificationOccurred('success');
+                } else {
+                    document.getElementById('coin-status').innerText = `Проигрыш. Выпало: ${result === 'heads' ? 'ОРЁЛ 👑' : 'РЕШКА 🦅'}`;
+                    if (tg) tg.HapticFeedback.notificationOccurred('error');
+                }
+                
+                // Возвращаем монетку в исходное
+                setTimeout(() => {
+                    coin.style.transition = 'none';
+                    coin.className = 'coin';
+                    setTimeout(() => { coin.style.transition = 'transform 2s cubic-bezier(0.2, 0.8, 0.2, 1)'; }, 50);
+                }, 2000);
+
+            }, 2100);
+        }
+
+        // ==========================================
+        // --- ИГРА 4: СЛОТЫ ---
+        // ==========================================
+        let slotsPlaying = false;
+        const slotEmojis = ['🍒', '🍋', '💎', '7️⃣'];
+
+        function startSlotsGame() {
+            if (slotsPlaying) return;
+            const bet = checkBet('slots-bet-input');
+            if (!bet) return;
+            
+            balance -= bet; updateBalanceUI();
+            slotsPlaying = true;
+            
+            const s1 = document.getElementById('slot1');
+            const s2 = document.getElementById('slot2');
+            const s3 = document.getElementById('slot3');
+            
+            s1.classList.add('spinning'); s2.classList.add('spinning'); s3.classList.add('spinning');
+            document.getElementById('slots-status').innerText = "Крутим...";
+            
+            // Анимация смены картинок
+            const spinInterval = setInterval(() => {
+                s1.innerText = slotEmojis[Math.floor(Math.random() * slotEmojis.length)];
+                s2.innerText = slotEmojis[Math.floor(Math.random() * slotEmojis.length)];
+                s3.innerText = slotEmojis[Math.floor(Math.random() * slotEmojis.length)];
+            }, 100);
+            
+            // Остановка через 2 секунды
+            setTimeout(() => {
+                clearInterval(spinInterval);
+                s1.classList.remove('spinning'); s2.classList.remove('spinning'); s3.classList.remove('spinning');
+                
+                const r1 = slotEmojis[Math.floor(Math.random() * slotEmojis.length)];
+                const r2 = slotEmojis[Math.floor(Math.random() * slotEmojis.length)];
+                const r3 = slotEmojis[Math.floor(Math.random() * slotEmojis.length)];
+                
+                s1.innerText = r1; s2.innerText = r2; s3.innerText = r3;
+                
+                let win = 0;
+                if (r1 === r2 && r2 === r3) {
+                    win = bet * 5;
+                    document.getElementById('slots-status').innerText = `ДЖЕКПОТ! x5 (+${win} 🪙)`;
+                    if (tg) tg.HapticFeedback.notificationOccurred('success');
+                } else if (r1 === r2 || r2 === r3 || r1 === r3) {
+                    win = Math.floor(bet * 1.5);
+                    document.getElementById('slots-status').innerText = `Пара! x1.5 (+${win} 🪙)`;
+                    if (tg) tg.HapticFeedback.notificationOccurred('success');
+                } else {
+                    document.getElementById('slots-status').innerText = `Мимо. Попробуй еще!`;
+                    if (tg) tg.HapticFeedback.notificationOccurred('error');
+                }
+                
+                if (win > 0) {
+                    balance += win; updateBalanceUI();
+                }
+                
+                slotsPlaying = false;
+            }, 2000);
+        }
+
+        // Параллакс дыма
         window.addEventListener('scroll', () => {
             const scrolled = window.scrollY;
             document.querySelectorAll('.smoke').forEach((smoke, index) => {
