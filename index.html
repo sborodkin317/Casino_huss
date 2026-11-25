@@ -243,16 +243,8 @@
             resetGameBoard();
         }
 
-        function resetGameBoard() {
-            isPlaying = false;
-            revealedCells = 0;
-            currentMultiplier = 1.0;
-            document.getElementById('bet-row').style.display = 'flex';
-            document.getElementById('cashout-btn').style.display = 'none';
-            document.getElementById('multiplier-display').style.display = 'none';
-            document.getElementById('status-text').innerText = "Сделай ставку и нажми «Играть»";
-            
-            // Отрисовка пустого поля
+        // Создание/пересоздание поля
+        function createGrid() {
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
             for (let i = 0; i < 25; i++) {
@@ -262,6 +254,20 @@
                 cell.onclick = () => clickCell(i, cell);
                 grid.appendChild(cell);
             }
+        }
+
+        function resetGameBoard() {
+            isPlaying = false;
+            revealedCells = 0;
+            currentMultiplier = 1.0;
+            
+            document.getElementById('bet-row').style.display = 'flex';
+            document.getElementById('cashout-btn').style.display = 'none';
+            document.getElementById('multiplier-display').style.display = 'none';
+            document.getElementById('status-text').innerText = "Сделай ставку и нажми «Играть»";
+            document.getElementById('status-text').style.color = "#fff";
+            
+            createGrid();
         }
 
         function startGame() {
@@ -281,22 +287,22 @@
                 if (!mines.includes(r)) mines.push(r);
             }
 
+            // Включаем режим игры
             isPlaying = true;
             revealedCells = 0;
             currentMultiplier = 1.0;
 
-            // Обновляем UI
+            // Обновляем кнопки
             document.getElementById('bet-row').style.display = 'none';
             document.getElementById('cashout-btn').style.display = 'block';
             document.getElementById('multiplier-display').style.display = 'block';
             document.getElementById('status-text').innerText = "Открывай клетки и не попади на мину!";
+            document.getElementById('status-text').style.color = "#fff";
             document.getElementById('cashout-val').innerText = currentBet;
             document.getElementById('multiplier-val').innerText = currentMultiplier.toFixed(2);
 
-            resetGameBoard(); // Очищаем поле
-            document.getElementById('bet-row').style.display = 'none'; // Скрываем инпут
-            document.getElementById('cashout-btn').style.display = 'block'; // Показываем кнопку забрать
-            document.getElementById('multiplier-display').style.display = 'block';
+            // Создаем новое чистое поле
+            createGrid(); 
         }
 
         function clickCell(index, cellElement) {
@@ -313,8 +319,7 @@
                 cellElement.innerText = '💎';
                 revealedCells++;
 
-                // Пересчет множителя (чем больше открыто, тем выше)
-                // Простая математика: 1 + (открыто * 0.15) + (открыто^1.5 * 0.05)
+                // Пересчет множителя
                 currentMultiplier = 1 + (revealedCells * 0.15) + (Math.pow(revealedCells, 1.5) * 0.05);
                 
                 const cashVal = Math.floor(currentBet * currentMultiplier);
@@ -349,7 +354,6 @@
             document.getElementById('cashout-btn').style.display = 'none';
             
             setTimeout(() => {
-                document.getElementById('status-text').style.color = "#fff";
                 resetGameBoard();
             }, 2500);
         }
@@ -368,7 +372,6 @@
             document.getElementById('cashout-btn').style.display = 'none';
 
             setTimeout(() => {
-                document.getElementById('status-text').style.color = "#fff";
                 resetGameBoard();
             }, 2500);
         }
