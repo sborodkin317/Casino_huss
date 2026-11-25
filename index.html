@@ -14,6 +14,7 @@
             --dark-bg: #050505;
             --card-bg: #14080a;
             --cell-bg: #2a0a10;
+            --neon-green: #00ff66;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
@@ -26,16 +27,20 @@
             padding: 0;
             overflow-x: hidden;
             min-height: 100vh;
-            /* Переливающийся красный градиент на фоне */
-            background: radial-gradient(circle at 50% 0%, #2a050a 0%, #050505 60%, #000 100%);
-            background-size: 200% 200%;
-            animation: bgPulse 10s infinite alternate;
         }
 
-        @keyframes bgPulse {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 0% 100%; }
-        }
+        /* ====== ФОН: ДЫМ ====== */
+        .smoke-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; pointer-events: none; }
+        .smoke { position: absolute; bottom: -150px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(200,200,200,0.15) 0%, rgba(200,200,200,0) 60%); border-radius: 50%; filter: blur(20px); animation: floatUp 12s infinite linear; transition: transform 0.1s ease-out; }
+        .smoke.red { background: radial-gradient(circle, rgba(255,0,60,0.2) 0%, rgba(255,0,60,0) 60%); filter: blur(25px); }
+        .smoke:nth-child(1) { left: 5%; animation-duration: 14s; animation-delay: 0s; }
+        .smoke:nth-child(2) { left: 25%; animation-duration: 18s; animation-delay: 2s; }
+        .smoke:nth-child(3) { left: 50%; animation-duration: 15s; animation-delay: 4s; }
+        .smoke:nth-child(4) { left: 75%; animation-duration: 20s; animation-delay: 1s; }
+        .smoke:nth-child(5) { left: 90%; animation-duration: 13s; animation-delay: 5s; }
+        .smoke:nth-child(6) { left: 15%; animation-duration: 16s; animation-delay: 3s; }
+        .smoke:nth-child(7) { left: 65%; animation-duration: 19s; animation-delay: 0s; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 0.8; } 100% { transform: translateY(-120vh) scale(1.5); opacity: 0; } }
 
         /* --- ЭКРАН ПРИВЕТСТВИЯ --- */
         #welcome-screen {
@@ -109,7 +114,7 @@
         .play-btn { flex: 1; background: var(--neon-red); color: #fff; border: none; border-radius: 8px; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 15px rgba(255,0,60,0.5); }
         .play-btn:active { transform: scale(0.98); }
         
-        .cashout-btn { width: 100%; background: #00ff66; color: #000; border: none; border-radius: 8px; font-weight: 900; font-size: 16px; padding: 15px; cursor: pointer; text-transform: uppercase; display: none; box-shadow: 0 0 20px rgba(0,255,102,0.4); }
+        .cashout-btn { width: 100%; background: var(--neon-green); color: #000; border: none; border-radius: 8px; font-weight: 900; font-size: 16px; padding: 15px; cursor: pointer; text-transform: uppercase; display: none; box-shadow: 0 0 20px rgba(0,255,102,0.4); }
         .cashout-btn:active { transform: scale(0.98); }
 
         /* Сетка мин 5x5 */
@@ -133,40 +138,53 @@
         /* --- ИГРА РАКЕТКА (CRASH) --- */
         #rocket-screen { display: none; position: relative; z-index: 10; padding: 20px; height: 100vh; box-sizing: border-box; flex-direction: column; }
         
+        /* История иксов */
+        .crash-history { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 5px; }
+        .crash-history::-webkit-scrollbar { display: none; }
+        .history-item { padding: 5px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; white-space: nowrap; }
+        .history-red { background: rgba(255,0,60,0.15); color: var(--neon-red); border: 1px solid var(--neon-red); text-shadow: 0 0 5px var(--neon-red); }
+        .history-green { background: rgba(0,255,102,0.15); color: var(--neon-green); border: 1px solid var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
+
         .rocket-stage {
             flex: 1; position: relative; background: #050505;
             border: 1px solid rgba(255,0,60,0.3); border-radius: 16px;
             overflow: hidden; margin-bottom: 15px;
-            display: flex; justify-content: center; align-items: center;
             box-shadow: inset 0 0 50px rgba(255,0,60,0.1);
         }
 
+        /* SVG Дуга */
+        .rocket-trail-svg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
+        }
+
         .rocket-multiplier {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-size: 48px; font-weight: 900; color: var(--neon-red);
             text-shadow: 0 0 20px var(--neon-red), 0 0 40px var(--neon-red-glow);
-            z-index: 2; transition: transform 0.1s;
+            z-index: 3; transition: transform 0.1s;
         }
 
         .rocket-visual {
-            position: absolute; bottom: 10%; left: 10%;
-            font-size: 40px; transition: bottom 0.1s linear, left 0.1s linear;
+            position: absolute; font-size: 40px; transition: bottom 0.1s linear, left 0.1s linear;
             filter: drop-shadow(0 0 10px var(--neon-red));
-            z-index: 1;
+            z-index: 2;
         }
-        .rocket-visual::after {
-            content: '🔥'; position: absolute; bottom: -20px; left: 5px; font-size: 20px; opacity: 0.8;
-            animation: fire 0.1s infinite alternate;
-        }
-        @keyframes fire { from { transform: scale(1); opacity: 0.6; } to { transform: scale(1.3); opacity: 1; } }
 
         .crash-text {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             color: var(--neon-red); font-size: 30px; font-weight: 900; text-shadow: 0 0 20px var(--neon-red);
-            display: none; z-index: 3; text-align: center; width: 100%;
+            display: none; z-index: 4; text-align: center; width: 100%;
         }
     </style>
 </head>
 <body>
+
+    <!-- ДЫМ НА ФОНЕ -->
+    <div class="smoke-container">
+        <div class="smoke"></div><div class="smoke"></div><div class="smoke"></div>
+        <div class="smoke"></div><div class="smoke red"></div><div class="smoke red"></div><div class="smoke"></div>
+    </div>
 
     <!-- ЭКРАН ПРИВЕТСТВИЯ -->
     <div id="welcome-screen">
@@ -238,9 +256,24 @@
             <div style="font-size: 14px; font-weight: 700; color: var(--neon-red);"><span id="rocket-balance-display">0</span> 🪙</div>
         </div>
 
+        <!-- История крашей -->
+        <div class="crash-history" id="crash-history"></div>
+
         <div class="rocket-stage" id="rocket-stage">
+            <!-- SVG для дуги -->
+            <svg class="rocket-trail-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="trailGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#00ff66" />
+                        <stop offset="50%" stop-color="#ffcc00" />
+                        <stop offset="100%" stop-color="#ff003c" />
+                    </linearGradient>
+                </defs>
+                <path id="rocket-path" d="" stroke="url(#trailGradient)" stroke-width="1.5" fill="none" stroke-linecap="round" />
+            </svg>
+
             <div class="rocket-multiplier" id="rocket-multiplier-display">x1.00</div>
-            <div class="rocket-visual" id="rocket-visual">🚀</div>
+            <div class="rocket-visual" id="rocket-visual" style="bottom: 10%; left: 10%;">🚀</div>
             <div class="crash-text" id="crash-text">CRASHED!</div>
         </div>
 
@@ -429,7 +462,7 @@
             document.getElementById('status-text').style.color = "#00ff66";
             document.getElementById('cashout-btn').style.display = 'none';
 
-            // ПОКАЗЫВАЕМ ГДЕ БЫЛИ МИНЫ
+            // Показ мин при выигрыше
             document.querySelectorAll('.cell').forEach(c => {
                 const idx = parseInt(c.dataset.index);
                 if (mines.includes(idx) && c.innerText !== '💣') {
@@ -450,11 +483,13 @@
         let rocketMultiplier = 1.00;
         let rocketCrashPoint = 1.00;
         let currentRocketBet = 0;
+        let crashHistory = [];
 
         function openRocket() {
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('rocket-screen').style.display = 'flex';
             resetRocketGame();
+            renderCrashHistory();
         }
 
         function resetRocketGame() {
@@ -467,10 +502,37 @@
             document.getElementById('rocket-multiplier-display').innerText = "x1.00";
             document.getElementById('rocket-multiplier-display').style.color = "var(--neon-red)";
             document.getElementById('crash-text').style.display = 'none';
-            document.getElementById('rocket-visual').style.bottom = '10%';
-            document.getElementById('rocket-visual').style.left = '10%';
+            
+            // Сброс ракеты в начало
+            const rocketEl = document.getElementById('rocket-visual');
+            rocketEl.style.bottom = '10%';
+            rocketEl.style.left = '10%';
+            
+            // Очистка SVG дуги
+            document.getElementById('rocket-path').setAttribute('d', '');
+            
             document.getElementById('rocket-status').innerText = "Сделай ставку и запускай ракету!";
             document.getElementById('rocket-status').style.color = "#888";
+        }
+
+        // Функция для добавления иксов в историю
+        function addToHistory(multiplier) {
+            crashHistory.unshift(multiplier);
+            if (crashHistory.length > 10) crashHistory.pop(); // Оставляем только 10 последних
+            renderCrashHistory();
+        }
+
+        // Отрисовка истории
+        function renderCrashHistory() {
+            const container = document.getElementById('crash-history');
+            container.innerHTML = '';
+            crashHistory.forEach(val => {
+                const div = document.createElement('div');
+                const isGreen = parseFloat(val) >= 2.0; // Если икс 2 и выше - зеленый
+                div.className = `history-item ${isGreen ? 'history-green' : 'history-red'}`;
+                div.innerText = `x${val}`;
+                container.appendChild(div);
+            });
         }
 
         function startRocketGame() {
@@ -482,7 +544,7 @@
             currentRocketBet = bet;
             updateBalanceUI();
 
-            // Генерация точки краша (от 1.1 до ~10.0, с шансом на большие иксы)
+            // Генерация точки краша
             const randomSeed = Math.random();
             rocketCrashPoint = Math.max(1.1, (100 / (100 - randomSeed * 99))).toFixed(2);
 
@@ -491,7 +553,7 @@
             
             document.getElementById('rocket-bet-row').style.display = 'none';
             document.getElementById('rocket-cashout-btn').style.display = 'block';
-            document.getElementById('rocket-cashout-btn').style.background = "#00ff66"; // Зеленая при взлете
+            document.getElementById('rocket-cashout-btn').style.background = "#00ff66";
             document.getElementById('rocket-cashout-btn').style.color = "#000";
             document.getElementById('rocket-cashout-val').innerText = currentRocketBet;
             document.getElementById('rocket-status').innerText = "Ракета летит! Забирай до краша!";
@@ -499,29 +561,37 @@
             
             document.getElementById('crash-text').style.display = 'none';
             document.getElementById('rocket-multiplier-display').style.color = "var(--neon-red)";
-            document.getElementById('rocket-visual').style.bottom = '10%';
-            document.getElementById('rocket-visual').style.left = '10%';
+            
+            const rocketEl = document.getElementById('rocket-visual');
+            rocketEl.style.bottom = '10%';
+            rocketEl.style.left = '10%';
+            document.getElementById('rocket-path').setAttribute('d', '');
 
             let startTime = Date.now();
 
             rocketInterval = setInterval(() => {
                 let elapsed = (Date.now() - startTime) / 1000;
                 
-                // Формула роста множителя
                 rocketMultiplier = 1 + (elapsed * 0.15) + Math.pow(elapsed, 2) * 0.08;
                 
                 document.getElementById('rocket-multiplier-display').innerText = "x" + rocketMultiplier.toFixed(2);
                 const cashVal = Math.floor(currentRocketBet * rocketMultiplier);
                 document.getElementById('rocket-cashout-val').innerText = cashVal;
 
-                // Двигаем ракету по экрану
-                const rocketEl = document.getElementById('rocket-visual');
+                // Двигаем ракету
                 let bottomPos = 10 + (rocketMultiplier - 1) * 15;
                 let leftPos = 10 + (rocketMultiplier - 1) * 10;
                 if(bottomPos > 80) bottomPos = 80;
                 if(leftPos > 80) leftPos = 80;
+                
                 rocketEl.style.bottom = bottomPos + '%';
                 rocketEl.style.left = leftPos + '%';
+
+                // Рисуем дугу
+                // Начало: x=10, y=90 (в SVG координатах)
+                // Конец: x=leftPos, y=(100-bottomPos)
+                const pathD = `M 10 90 Q ${leftPos / 2} 90, ${leftPos} ${100 - bottomPos}`;
+                document.getElementById('rocket-path').setAttribute('d', pathD);
 
                 // Проверка на краш
                 if (rocketMultiplier >= parseFloat(rocketCrashPoint)) {
@@ -543,6 +613,9 @@
             
             document.getElementById('rocket-cashout-btn').style.display = 'none';
 
+            // Добавляем в историю
+            addToHistory(rocketCrashPoint);
+
             setTimeout(resetRocketGame, 3000);
         }
 
@@ -563,8 +636,20 @@
             document.getElementById('rocket-cashout-btn').style.display = 'none';
             document.getElementById('rocket-multiplier-display').style.color = "#00ff66";
 
+            // Добавляем в историю (округленный)
+            addToHistory(rocketMultiplier.toFixed(2));
+
             setTimeout(resetRocketGame, 3000);
         }
+
+        // --- ПАРАЛЛАКС ДЫМА ---
+        window.addEventListener('scroll', () => {
+            const scrolled = window.scrollY;
+            document.querySelectorAll('.smoke').forEach((smoke, index) => {
+                const speed = (index % 3 + 1) * 0.3; 
+                smoke.style.transform = `translateY(-${scrolled * speed}px) scale(${1 + scrolled * 0.0005})`;
+            });
+        });
     </script>
 </body>
 </html>
